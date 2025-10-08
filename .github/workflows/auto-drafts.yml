@@ -32,9 +32,10 @@ jobs:
           git add posts/
           git commit -m "AI: Add new Irish music summaries" || echo "No changes"
           git push
-  name: Push updates to Hugging Face Space
-    run: |
-      git config --global user.email "action@github.com"
-      git config --global user.name "GitHub Action"
-      git remote add hf https://huggingface.co/spaces/spanishkev/irish-music-blog || true
-      git push https://huggingface:${{ secrets.HUGGINGFACE_API_TOKEN }}@huggingface.co/spaces/spanishkev/irish-music-blog main --force
+
+      - name: Push updates to Hugging Face Space
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git remote add hf https://huggingface.co/spaces/spanishkev/irish-music-blog || true
+          git push https://huggingface:${{ secrets.HUGGINGFACE_API_TOKEN }}@huggingface.co/spaces/spanishkev/irish-music-blog main --force
