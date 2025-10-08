@@ -2,20 +2,23 @@ name: Auto-generate Irish music news
 
 on:
   schedule:
-    - cron: "0 10 * * *"  # runs daily at 10:00 UTC
-  workflow_dispatch:      # allows manual runs
+    - cron: "0 10 * * *"  # Runs daily at 10:00 UTC
+  workflow_dispatch:      # Allows manual runs
 
 jobs:
-  update:
+  generate-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for git push operations
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true  # Cancels older runs if a new one starts
     steps:
-      - uses: actions/checkout@v3
-        with:
-         fetch-depth: 0
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -35,12 +38,11 @@ jobs:
           git config user.email "bot@example.com"
           git add posts/
           git commit -m "AI: Add new Irish music summaries" || echo "No changes"
+          git push
 
       - name: Push updates to Hugging Face Space
-        env:
-          HUGGINGFACE_API_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           git remote add hf https://huggingface.co/spaces/spanishkev/irish-music-blog || true
-          git push https://huggingface:${HUGGINGFACE_API_TOKEN}@huggingface.co/spaces/spanishkev/irish-music-blog main --force
+          git push https://huggingface:${{ secrets.HUGGINGFACE_API_TOKEN }}@huggingface.co/spaces/spanishkev/irish-music-blog main --force-with-lease
